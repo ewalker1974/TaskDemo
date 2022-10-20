@@ -1,0 +1,43 @@
+version: '3'
+services:
+  php-td:
+    build: .
+    volumes:
+      - ../:/var/www/html
+    depends_on:
+      - db-td
+    links:
+      - db-td:db
+    dns: 8.8.8.8
+    environment:
+      PHP_IDE_CONFIG: "serverName=manager-dashboard"
+
+  db-td:
+    image: mariadb:10.3.32-focal
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: database
+    volumes:
+      - mysql-td:/var/lib/mysql
+    ports:
+      - "7306:3306"
+
+  web-td:
+    image: clover/openresty
+
+    ports:
+      - "9090:80"
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./nginx/conf.d/:/usr/local/openresty/nginx/conf/conf.d/
+      - ../:/var/www/html
+    depends_on:
+      - php-td
+    links:
+      - php-td:php
+volumes:
+    mysql-td: null
+
+
